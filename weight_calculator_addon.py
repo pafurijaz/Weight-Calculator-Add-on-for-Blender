@@ -24,7 +24,7 @@ import bpy
 from mathutils import Matrix
 import bmesh
 
-# Define the materials we support
+# List of supported materials with their names
 materials = [
     "iron", "steel", "stainless_steel", "aluminum", "copper", "brass", "bronze",
     "titanium", "gold", "silver", "lead", "zinc", "magnesium", "nickel",
@@ -33,6 +33,12 @@ materials = [
 ]
 
 def is_solid_mesh(obj):
+    """
+    Check if the given object is a solid mesh.
+    
+    :param obj: The Blender object to check.
+    :return: True if the object is a solid mesh, False otherwise.
+    """
     if obj.type != 'MESH':
         return False
     
@@ -56,6 +62,13 @@ def is_solid_mesh(obj):
     return True
 
 def get_mesh_volume(mesh, unit_conversion_factor):
+    """
+    Calculate the volume of the given mesh.
+    
+    :param mesh: The Blender mesh data.
+    :param unit_conversion_factor: Factor to convert the volume to the desired units.
+    :return: The volume of the mesh.
+    """
     volume = 0.0
     bm = bmesh.new()
     bm.from_mesh(mesh)
@@ -73,6 +86,12 @@ def get_mesh_volume(mesh, unit_conversion_factor):
     return volume * unit_conversion_factor
 
 def get_material_density(material_name):
+    """
+    Get the density of the specified material.
+    
+    :param material_name: The name of the material.
+    :return: The density of the material in kg/m^3.
+    """
     material_densities = {
         "iron": 7850,
         "steel": 7850,
@@ -105,14 +124,33 @@ def get_material_density(material_name):
     return material_densities.get(material_name.lower(), 1000)
 
 def get_custom_material_density():
-    # Retrieve the custom density from the scene property
+    """
+    Retrieve the custom material density from the scene property.
+    
+    :return: The custom material density in kg/m^3.
+    """
     return bpy.context.scene.custom_density
 
 def get_custom_volume(unit_conversion_factor):
-    # Retrieve the custom volume from the scene property
+    """
+    Retrieve the custom volume from the scene property.
+    
+    :param unit_conversion_factor: Factor to convert the volume to the desired units.
+    :return: The custom volume.
+    """
     return bpy.context.scene.custom_volume * unit_conversion_factor
 
 def get_mesh_weight(mesh, use_custom_density=False, use_custom_volume=False, unit_conversion_factor=1.0, density_conversion_factor=1.0):
+    """
+    Calculate the weight of the given mesh.
+    
+    :param mesh: The Blender mesh data.
+    :param use_custom_density: Whether to use a custom density.
+    :param use_custom_volume: Whether to use a custom volume.
+    :param unit_conversion_factor: Factor to convert the volume to the desired units.
+    :param density_conversion_factor: Factor to convert the density to the desired units.
+    :return: The weight of the mesh.
+    """
     if use_custom_volume:
         volume = get_custom_volume(unit_conversion_factor)
     else:
@@ -126,6 +164,9 @@ def get_mesh_weight(mesh, use_custom_density=False, use_custom_volume=False, uni
     return volume * density * density_conversion_factor
 
 class OBJECT_PT_weight_calculator(bpy.types.Panel):
+    """
+    Panel for the Weight Calculator UI.
+    """
     bl_label = "Weight Calculator"
     bl_idname = "OBJECT_PT_weight_calculator"
     bl_space_type = 'VIEW_3D'
@@ -161,15 +202,18 @@ class OBJECT_PT_weight_calculator(bpy.types.Panel):
         row = layout.row()
         row.prop(scene, "length_unit", text="Length Unit")
         
-        # New button for volume calculation
+        # Button to calculate volume
         row = layout.row()
         row.operator("object.volume_calculate", text="Calculate Volume")
         
-        # Move the "Calculate Weight" button to the fourth row
+        # Button to calculate weight
         row = layout.row()
         row.operator("object.weight_calculate", text="Calculate Weight")
 
 class OBJECT_OT_calculate_weight(bpy.types.Operator):
+    """
+    Operator to calculate the weight of selected objects.
+    """
     bl_idname = "object.weight_calculate"
     bl_label = "Calculate Weight"
 
@@ -204,6 +248,9 @@ class OBJECT_OT_calculate_weight(bpy.types.Operator):
         return {'FINISHED'}
 
 class OBJECT_OT_calculate_volume(bpy.types.Operator):
+    """
+    Operator to calculate the volume of selected objects.
+    """
     bl_idname = "object.volume_calculate"
     bl_label = "Calculate Volume"
 
@@ -235,6 +282,13 @@ class OBJECT_OT_calculate_volume(bpy.types.Operator):
         return {'FINISHED'}
 
 def get_unit_conversion_factors(unit_system, length_unit):
+    """
+    Get the unit conversion factors based on the selected unit system and length unit.
+    
+    :param unit_system: The selected unit system (METRIC or IMPERIAL).
+    :param length_unit: The selected length unit.
+    :return: Tuple containing volume conversion factor, density conversion factor, weight unit, and volume unit.
+    """
     if unit_system == 'METRIC':
         if length_unit == 'MILLIMETERS':
             return 1e-9, 1e3, 'g', 'mm³'  # mm^3 to m^3, kg to g
@@ -250,6 +304,9 @@ def get_unit_conversion_factors(unit_system, length_unit):
     return 1.0, 1.0, 'kg', 'm³'  # Default to no conversion
 
 def register():
+    """
+    Register the classes and properties for the add-on.
+    """
     bpy.utils.register_class(OBJECT_PT_weight_calculator)
     bpy.utils.register_class(OBJECT_OT_calculate_weight)
     bpy.utils.register_class(OBJECT_OT_calculate_volume)  # Register the new operator
@@ -312,6 +369,9 @@ def register():
     )
 
 def unregister():
+    """
+    Unregister the classes and properties for the add-on.
+    """
     bpy.utils.unregister_class(OBJECT_PT_weight_calculator)
     bpy.utils.unregister_class(OBJECT_OT_calculate_weight)
     bpy.utils.unregister_class(OBJECT_OT_calculate_volume)  # Unregister the new operator
