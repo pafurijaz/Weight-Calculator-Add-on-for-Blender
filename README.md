@@ -1,3 +1,6 @@
+# This add-on has some problems, so for the moment it is not reliable, I am working on it and I need to update the program, with that new I'm testing. So at the moment I do not recommend its use.
+
+
 ## **Weight Calculator Add-on for Blender**
 
 ###
